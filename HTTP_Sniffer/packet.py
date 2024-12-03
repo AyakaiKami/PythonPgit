@@ -3,9 +3,9 @@ import ipaddress
 
 class IP_Packet:
     def __init__(self,data) -> None:
-        header=struct.unpack('<BBHHHBBH4s4s',data[:(ord(data[0]) & 0xF) * 4])
+        header=struct.unpack('<BBHHHBBH4s4s',data[:20])
         self.version=header[0] >> 4
-        self.header_length=(header[0]& 0xF)*4
+        self.header_length=(header[0]&0xF)*4
         self.type_of_service=header[1]
         self.length=header[2]
         
@@ -21,12 +21,12 @@ class IP_Packet:
         
         self.destination_ip=ipaddress.ip_address(header[9])
 
-        self.payload=data[(ord(data[0]) & 0xF) * 4:]
+        self.payload=data[self.header_length:]
         self.tcp_packet=TCP_Packet(self.payload)
-
+        self.application_level_type=self.tcp_packet.type
     def __str__(self) -> str:
-        return f"Packet from {self.source_ip} to {self.destination_ip} Fragment_offset:{self.fragment_offset}"
-
+        return f"Packet from {self.source_ip}:{self.tcp_packet.source_port} to {self.destination_ip}:{self.tcp_packet.destination_port} Payload:{self.tcp_packet}"
+        
 class TCP_Packet:
     def __init__(self,data) -> None:
         header=struct.unpack('!HHLLBBHHH',data[:20])
@@ -37,10 +37,15 @@ class TCP_Packet:
         
         self.acknowledgment_number=hex(header[3])
 
-        self.window=header[6]
+        self.data_offset=(header[4]>>4)*4
+        self.window=header[5]
 
-        self.checksum=header[7]
-        self.urgent_pointer=header[8]
-        
+        self.checksum=header[6]
+        self.urgent_pointer=header[7]
+
+        self.payload="".join([chr(c) for c in data[self.data_offset:]])
+
+        self.type="HTTP" if "HTTP" in self.payload else None
+
     def __str__(self) -> str:
-        return 
+        return  self.payload
