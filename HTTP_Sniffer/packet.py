@@ -67,7 +67,8 @@ class TCP_Packet:
         self.payload=""
         try:
             self.payload=data[self.data_offset:].decode()
-            print(self.payload)
+            if self.payload!="":
+                print(self.payload)
         except Exception as e:
             pass
 
