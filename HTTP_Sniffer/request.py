@@ -9,45 +9,92 @@ class Reconstruct:
                 if "HTTP" in packet.payload.split('\n')[0]:
                     Reconstruct.requests_list[key]={'sequence_number':packet.sequence_number,'request':Request(packet.payload)}
                     
-                    #if Reconstruct.requests_list[key]['payload'].endswith(("\r\n","</html>")):
-                    #    print(f"[+] Packet :{key}\n")
-                    #    print("------------Start payload-----------")
-                    #    print(Reconstruct.requests_list[key]['payload'])
-                    #    print("------------End Payload-------------\n")
-                    #    Reconstruct.requests_list[key] = None
+                    if Reconstruct.requests_list[key]['request'].is_full():
+                        print(f"[+] Packet :{key}\n")
+                        print("------------Start request-----------")
+                        print(Reconstruct.requests_list[key]['request'])
+                        print("------------End request-------------\n")
+                        Reconstruct.requests_list[key] = None
 
             else:
-                #if Reconstruct.requests_list[key]['sequence_number']<packet.sequence_number:
-                #    Reconstruct.requests_list[key]['sequence_number']=packet.sequence_number
-                #    Reconstruct.requests_list[key]['payload']+=packet.payload
-#
-                #    if Reconstruct.requests_list[key]['payload'].endswith(("\r\n","</html>")) :
-                #        print(f"[+] Packet :{key}\n")
-                #        print("------------Start payload-----------")
-                #        print(Reconstruct.requests_list[key]['payload'])
-                #        print("------------End Payload-------------\n")
-                #        Reconstruct.requests_list[key] = None
-                #    pass
-                pass
+                if Reconstruct.requests_list[key]['sequence_number']<packet.sequence_number:
+                    Reconstruct.requests_list[key]['sequence_number']=packet.sequence_number
+                    Reconstruct.requests_list[key]['request'].append(packet.payload)
+                    if Reconstruct.requests_list[key]['request'].is_full():
+                        print(f"[+] Packet :{key}\n")
+                        print("------------Start request-----------")
+                        print(Reconstruct.requests_list[key]['request'])
+                        print("------------End request-------------\n")
+                        Reconstruct.requests_list[key] = None
+                
     
 class Request:
     def __init__(self,data) -> None:
         lines=[line+'\n' for line in data.split('\n')]
-        
         self.request_line=lines[0]
         
         self.header_fields={}
 
+        self.is_empty_line_set=False
+        self.empty_line=0
         for i,line in enumerate(lines[1:],1):
+            self.empty_line=i
             if line=="\r\n":
-                empty_line=i
+                self.is_empty_line_set=True
                 break
             header_key=line.split(':')[0]
             header_value=line.split(':')[1].removeprefix(' ').removesuffix('\n')
             self.header_fields[header_key]=header_value
-        
-        self.content=None
-        if self.header_fields.get('Content-Length')!=None:
-            self.content="".join(lines[empty_line:])
 
+        self.content=None
+        self.is_over=False
+        if self.header_fields.get('Content-Length') is not None:
+            self.content="".join(lines[self.empty_line+1:])
+            if len(self.content)==int(self.header_fields['Content-Length']):
+                self.is_over=True
+        else:
+            if self.is_empty_line_set:
+                self.is_over=True
+
+    def append(self,data)->None:
+        lines=[line+'\n' for line in data.split('\n')]
+
+        if not self.is_empty_line_set:
+            last_empty_line=self.empty_line
+            for i,line in enumerate(lines,last_empty_line+1):
+                if line=="\r\n":
+                    self.empty_line=i
+                    self.is_empty_line_set=True
+                    break
+                header_key=line.split(':')[0]
+                header_value=line.split(':')[1].removeprefix(' ').removesuffix('\n')
+                self.header_fields[header_key]=header_value
+                self.empty_line=i
+
+            self.content=None
+            self.is_over=False
+            if self.header_fields.get('Content-Length')!=None:
+                self.content+="".join(lines[self.empty_line+1:])
+                if len(self.content)==self.header_fields['Content-Length']:
+                    self.is_over=True
+            else:
+                if self.is_empty_line_set:
+                    self.is_over=True
+        else:
+            self.content+="".join(lines)
+            
+            if len(self.content)>=int(self.header_fields['Content-Length']):
+                self.is_over=True
+
+    def is_full(self):
+        return self.is_over
     
+    def __str__(self) -> str:
+        buffer=self.request_line
+        for key,value in self.header_fields.items():
+            buffer+=f"{key}: {value}\n"
+        
+        buffer+="\n"
+        if self.content!=None:
+            buffer+=self.content
+        return buffer
