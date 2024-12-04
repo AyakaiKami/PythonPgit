@@ -5,12 +5,29 @@ import socket
 class Ethernet_Frame:
     def __init__(self,data) -> None:
         header=struct.unpack('! 6s 6s H',data[:14])
-        #self.preamble=header[0]
         self.destination_address=Ethernet_Frame.getmac(header[0])
         self.source_address=Ethernet_Frame.getmac(header[1])
         self.type=socket.htons(header[2])
         
         self.ip_packet=IP_Packet(data[14:])
+
+        self.is_tcp_packet=False
+        if self.ip_packet.is_tcp_packet:
+            self.is_tcp_packet=True
+            
+            # Source
+            self.source_ip=self.ip_packet.source_ip
+            self.source_port=self.ip_packet.tcp_packet.source_port
+
+            # Destination
+            self.destination_ip=self.ip_packet.destination_ip
+            self.destination_port=self.ip_packet.tcp_packet.destination_port
+
+            # Sequence number
+            self.sequence_number=self.ip_packet.tcp_packet.sequence_number
+
+            # Payload
+            self.payload=self.ip_packet.tcp_packet.payload
 
     def getmac(mac):
         return (':'.join(map('{:02x}'.format,mac))).upper()
@@ -36,7 +53,9 @@ class IP_Packet:
         
         self.destination_ip=ipaddress.ip_address(header[9])
 
+        self.is_tcp_packet=False
         if self.protocol==6:
+            self.is_tcp_packet=True
             self.payload=data[self.header_length:]
             self.tcp_packet=TCP_Packet(self.payload)
             self.application_level_type=self.tcp_packet.type
@@ -67,8 +86,8 @@ class TCP_Packet:
         self.payload=""
         try:
             self.payload=data[self.data_offset:].decode()
-            if self.payload!="":
-                print(self.payload)
+            #if self.payload!="":
+            #    print(self.payload)
         except Exception as e:
             pass
 
