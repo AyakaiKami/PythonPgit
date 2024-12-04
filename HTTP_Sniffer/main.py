@@ -14,7 +14,7 @@ from packet import Ethernet_Frame as Ethernet_Frame
 from packet import IP_Packet as IP_Packet
 from packet import TCP_Packet as TCP_Packet
 
-from request import Requests as Requests
+from request import Reconstruct as Reconstruct
 
 
 def sniff(interface):
@@ -25,7 +25,7 @@ def sniff(interface):
         while True:
             raw_data=sniffer.recv(65535)
             packet=Ethernet_Frame(raw_data)
-            Requests.addPacket(packet)
+            Reconstruct.addPacket(packet)
                 
     except KeyboardInterrupt:
         return
