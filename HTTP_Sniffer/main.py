@@ -41,15 +41,32 @@ def update_label_size(event):
     #   Requests list
     outer_frame_requests_list.place(x=0,y=0,width=inner_frame_left_panel.winfo_width(),height=inner_frame_left_panel.winfo_height()//8 * 3)
     inner_frame_requests_list.place(x=1,y=0,width=outer_frame_requests_list.winfo_width()-1,height=(outer_frame_requests_list.winfo_height()-1))
-
-    frame_filters_list.place(x=1,y=inner_frame_left_panel.winfo_height()//8 * 3,width=inner_frame_left_panel.winfo_width(),height=inner_frame_left_panel.winfo_height()//8 * 5)
     
     #   Request filters
+    frame_filters_list.place(x=1,y=inner_frame_left_panel.winfo_height()//8 * 3,width=inner_frame_left_panel.winfo_width(),height=inner_frame_left_panel.winfo_height()//8 * 5)
     #       IP filter
-    ip_source_label.place(x=0,y=0)
-
+    frame_ip_filter.place(x=0,y=0,width=frame_filters_list.winfo_width(),height=frame_filters_list.winfo_height()//4)
+    #           Source
+    label_ip_source.place(x=0,y=0,width=frame_ip_filter.winfo_width()//6,height=frame_ip_filter.winfo_height())
+    entry_ip_source.place(x=frame_ip_filter.winfo_width()//6,y=frame_ip_filter.winfo_height()//3,width=frame_ip_filter.winfo_width()//4,height=frame_ip_filter.winfo_height()//4)
+    #           Destination
+    label_ip_destination.place(x=frame_ip_filter.winfo_width()//2,y=0,width=frame_ip_filter.winfo_width()//6,height=frame_ip_filter.winfo_height())
+    entry_ip_destination.place(x=frame_ip_filter.winfo_width()//2+frame_ip_filter.winfo_width()//6,y=frame_ip_filter.winfo_height()//3,width=frame_ip_filter.winfo_width()//4,height=frame_ip_filter.winfo_height()//4)
+    
     #       Port Filter
+    frame_port_filter.place(x=0,y=frame_filters_list.winfo_height()//4,width=frame_filters_list.winfo_width(),height=frame_filters_list.winfo_height()//4)
+    #           Source
+    label_port_source.place(x=0,y=0,width=frame_port_filter.winfo_width()//6,height=frame_port_filter.winfo_height())
+    entry_port_source.place(x=frame_port_filter.winfo_width()//6,y=frame_port_filter.winfo_height()//3,width=frame_port_filter.winfo_width()//4,height=frame_port_filter.winfo_height()//4)
+    #           Destination
+    label_port_destination.place(x=frame_port_filter.winfo_width()//2,y=0,width=frame_port_filter.winfo_width()//6,height=frame_port_filter.winfo_height())
+    entry_port_destination.place(x=frame_port_filter.winfo_width()//2+frame_port_filter.winfo_width()//6,y=frame_port_filter.winfo_height()//3,width=frame_port_filter.winfo_width()//4,height=frame_port_filter.winfo_height()//4)
+    
     #       Header filter
+    frame_header_filter.place(x=0,y=frame_filters_list.winfo_height()//4*2,width=frame_filters_list.winfo_width(),height=frame_filters_list.winfo_height()//4)
+    label_header.place(x=0,y=0,width=frame_header_filter.winfo_width()//3,height=frame_header_filter.winfo_height())
+    entry_header.place(x=int(frame_header_filter.winfo_width()//3*0.7),y=frame_header_filter.winfo_height()//3,width=frame_header_filter.winfo_width()//3*2,height=frame_header_filter.winfo_height()//4)
+    
     #       Content filter
 
     # Right panel
@@ -162,13 +179,34 @@ inner_frame_requests_list=Frame(outer_frame_requests_list,bg='black',relief='sol
 
 #   Request filters
 frame_filters_list=Frame(inner_frame_left_panel,bg='black',relief='solid')
+
 #       IP filter
+frame_ip_filter=Frame(frame_filters_list,bg='black',relief='solid')
 #           Source
-ip_source_label=Label(frame_filters_list,text="Source IP:",bg='black',fg='white',relief='solid')
+label_ip_source=Label(frame_ip_filter,text="From IP:",bg='black',fg='white',relief='solid')
+entry_ip_source=Entry(frame_ip_filter,bg='white',relief='solid')
 #           Destination
+label_ip_destination=Label(frame_ip_filter,text="To IP:",bg='black',fg='white',relief='solid')
+entry_ip_destination=Entry(frame_ip_filter,bg='white',relief='solid')
+
 #       Port Filter
+frame_port_filter=Frame(frame_filters_list,bg='black',relief='solid')
+#           Source
+label_port_source=Label(frame_port_filter,text="From Port:",bg='black',fg='white',relief='solid')
+entry_port_source=Entry(frame_port_filter,bg='white',relief='solid')
+#           Destination
+label_port_destination=Label(frame_port_filter,text="To Port:",bg='black',fg='white',relief='solid')
+entry_port_destination=Entry(frame_port_filter,bg='white',relief='solid')
+
 #       Header filter
+frame_header_filter=Frame(frame_filters_list,bg='black',relief='solid')
+label_header=Label(frame_header_filter,text="Header:",bg='black',fg='white',relief='solid')
+entry_header=Entry(frame_header_filter,bg='white',relief='solid')
+
 #       Content filter
+frame_content_filter=Frame(frame_filters_list,bg='black',relief='solid')
+label_content_filter=Label(frame_content_filter,bg='black',relief='solid')
+entry_content=Entry(frame_content_filter,bg='white',relief='solid')
 
 # Right Panel
 outer_frame_right_panel=Frame(root,bg='white',relief='solid')
