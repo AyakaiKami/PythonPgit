@@ -1,6 +1,7 @@
 from packet import Ethernet_Frame as Ethernet_Frame
 
 class Reconstruct:
+    requests_return_list=[]
     requests_list={}
     def addPacket(packet:Ethernet_Frame):
         if packet.is_tcp_packet:
@@ -10,10 +11,11 @@ class Reconstruct:
                     Reconstruct.requests_list[key]={'sequence_number':packet.sequence_number,'request':Request(packet.payload)}
                     
                     if Reconstruct.requests_list[key]['request'].is_full():
-                        print(f"[+] Packet :{key}\n")
-                        print("------------Start request-----------")
-                        print(Reconstruct.requests_list[key]['request'])
-                        print("------------End request-------------\n")
+                        #print(f"[+] Packet :{key}\n")
+                        #print("------------Start request-----------")
+                        #print(Reconstruct.requests_list[key]['request'])
+                        #print("------------End request-------------\n")
+                        Reconstruct.requests_return_list.append(Reconstruct.requests_list[key]['request'])
                         Reconstruct.requests_list[key] = None
 
             else:
@@ -21,12 +23,16 @@ class Reconstruct:
                     Reconstruct.requests_list[key]['sequence_number']=packet.sequence_number
                     Reconstruct.requests_list[key]['request'].append(packet.payload)
                     if Reconstruct.requests_list[key]['request'].is_full():
-                        print(f"[+] Packet :{key}\n")
-                        print("------------Start request-----------")
-                        print(Reconstruct.requests_list[key]['request'])
-                        print("------------End request-------------\n")
+                        #print(f"[+] Packet :{key}\n")
+                        #print("------------Start request-----------")
+                        #print(Reconstruct.requests_list[key]['request'])
+                        #print("------------End request-------------\n")
+                        Reconstruct.requests_return_list.append(Reconstruct.requests_list[key]['request'])
                         Reconstruct.requests_list[key] = None
-                
+    def getLastRequest():
+        if Reconstruct.requests_return_list!=[]:
+            return Reconstruct.requests_return_list[-1]
+        return None
     
 class Request:
     def __init__(self,data) -> None:
