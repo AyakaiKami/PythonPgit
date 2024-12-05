@@ -8,7 +8,8 @@ import os
 import argparse
 import threading
 import time
-from tkinter import * 
+from tkinter import *
+from tkinter import ttk 
 import psutil
 
 
@@ -37,6 +38,19 @@ def update_label_size(event):
     # Left panel
     outer_frame_left_panel.place(x=0,y=root.winfo_height()//17,width=(root.winfo_width()//2),height=(root.winfo_height()//17 * 16))
     inner_frame_left_panel.place(x=1,y=0,width=(root.winfo_width()//2-2),height=(root.winfo_height()//17 * 16-1))
+    #   Requests list
+    outer_frame_requests_list.place(x=0,y=0,width=inner_frame_left_panel.winfo_width(),height=inner_frame_left_panel.winfo_height()//8 * 3)
+    inner_frame_requests_list.place(x=1,y=0,width=outer_frame_requests_list.winfo_width()-1,height=(outer_frame_requests_list.winfo_height()-1))
+
+    frame_filters_list.place(x=1,y=inner_frame_left_panel.winfo_height()//8 * 3,width=inner_frame_left_panel.winfo_width(),height=inner_frame_left_panel.winfo_height()//8 * 5)
+    
+    #   Request filters
+    #       IP filter
+    ip_source_label.place(x=0,y=0)
+
+    #       Port Filter
+    #       Header filter
+    #       Content filter
 
     # Right panel
     outer_frame_right_panel.place(x=(root.winfo_width()//2),y=root.winfo_height()//17,width=(root.winfo_width()//2),height=(root.winfo_height()//17 * 16))
@@ -44,9 +58,12 @@ def update_label_size(event):
 
 
 requests_list=[]
+is_recording=False
 
 def sniff(interface):
     global requests_list
+    global is_recording
+    requests_list=[]
     sniffer = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
     sniffer.bind((interface,0))
 
@@ -123,11 +140,16 @@ stop_button=Button(outer_frame_bar_sniffer_options,text="Stop",command=stop_butt
 #       -Record Start
 def start_recording():
     print("Recording")
+    global is_recording
+    is_recording=True
 start_recording_button=Button(outer_frame_bar_sniffer_options,text="Start Recording",command=start_recording)
 
 #       -Record Stop
 def stop_recording():
     print("Stopped Recording")
+    global is_recording
+    is_recording=False
+
 stop_recording_button=Button(outer_frame_bar_sniffer_options,text="Stop Recording",command=stop_recording)
 
 
@@ -135,9 +157,15 @@ stop_recording_button=Button(outer_frame_bar_sniffer_options,text="Stop Recordin
 outer_frame_left_panel=Frame(root,bg='white',relief='solid')
 inner_frame_left_panel=Frame(outer_frame_left_panel,bg='black',relief='solid')
 #   Requests list
-frame_requests_list=Frame(inner_frame_left_panel,bg='black',relief='solid')
+outer_frame_requests_list=Frame(inner_frame_left_panel,bg='white',relief='solid')
+inner_frame_requests_list=Frame(outer_frame_requests_list,bg='black',relief='solid')
+
 #   Request filters
+frame_filters_list=Frame(inner_frame_left_panel,bg='black',relief='solid')
 #       IP filter
+#           Source
+ip_source_label=Label(frame_filters_list,text="Source IP:",bg='black',fg='white',relief='solid')
+#           Destination
 #       Port Filter
 #       Header filter
 #       Content filter
@@ -152,3 +180,4 @@ root.bind('<Configure>',update_label_size)
 
 root.mainloop()
 sys.exit(0)
+
