@@ -47,14 +47,21 @@ class Request:
 
         self.is_empty_line_set=False
         self.empty_line=0
+
         for i,line in enumerate(lines[1:],1):
             self.empty_line=i
             if line=="\r\n":
                 self.is_empty_line_set=True
                 break
+
             header_key=line.split(':')[0]
-            header_value=line.split(':')[1].removeprefix(' ').removesuffix('\n')
-            self.header_fields[header_key]=header_value
+            header_value=line.split(':')[1].removeprefix(' ').removesuffix('\n').removesuffix('\r')
+            
+            if header_key=='X-Content-Type-Options':
+                #print(f"{header_key}: {header_value}")
+                pass
+
+            self.header_fields[header_key] = header_value
 
         self.content=None
         self.is_over=False
@@ -72,14 +79,15 @@ class Request:
         if not self.is_empty_line_set:
             last_empty_line=self.empty_line
             for i,line in enumerate(lines,last_empty_line+1):
+                self.empty_line=i
                 if line=="\r\n":
-                    self.empty_line=i
                     self.is_empty_line_set=True
                     break
                 header_key=line.split(':')[0]
                 header_value=line.split(':')[1].removeprefix(' ').removesuffix('\n')
-                self.header_fields[header_key]=header_value
-                self.empty_line=i
+                
+                self.header_fields[header_key] = header_value
+                
 
             self.content=None
             self.is_over=False

@@ -1,13 +1,11 @@
 #!/usr/bin/python3
 
-import ipaddress
 import socket
-import struct
 import sys
 import os
 import argparse
-import threading
-import time
+from datetime import datetime
+import json
 
 from packet import *
 from request import *
@@ -40,6 +38,8 @@ def sniff(interface):
                 if Reconstruct.getLastRequest()!=None:
                     if filterRequest(Reconstruct.getLastRequest()):
                         print(Reconstruct.getLastRequest())
+                        if record:
+                            record_request(Reconstruct.getLastRequest())
                         Reconstruct.loseAll()
             except socket.timeout:
                 continue
@@ -111,18 +111,57 @@ def filterRequest(request:Request):
     if type_request and not request.request_line.startswith("HTTP") and not request.request_line.startswith(type_request):
         return False
     
+    
+    for header_key,header_value in headers.items():
+        #print(f"header value:{header_value} request header value {request.header_fields[header_key] if request.header_fields.get(header_key)!=None else "none"}") 
+        if not request.header_fields.get(header_key):
+            return False
+        else:
+            if request.header_fields[header_key]!=header_value:
+                return False
+
+    if content:
+        if request.content:
+            if content not in request.content:
+                return False
+        else:
+            return False
+        
     return True
 
+file_path=None
+def record_request(request:Request)->None:
+    global file_path
+    if not file_path:
+        file_path=f"requests_capture_{datetime.now().strftime("%d %m %Y %H %M %S")}.json"
+        with open(file_path, "w") as f:
+            f.write('[]')
 
+    request_dict={
+        "source_ip": request.source_ip,
+        "source_port": request.source_port,
+        "destination_ip": request.destination_ip,
+        "destination_port": request.destination_port,
+        "request_line": request.request_line,
+        "header_fields": request.header_fields,
+        "content": request.content,
+    }
 
-if os.getuid()!=0:
-    print("You need need root privileges to run this program!")
-    sys.exit(1)
+    with open(file_path,"r+") as f:
+        data=json.load(f)
+        data.append(request_dict)
+        f.seek(0)
+        json.dump(data,f,indent=2)
 
-args=parse_arguments()
+if __name__=='__main__':
+    if os.getuid()!=0:
+        print("You need need root privileges to run this program!")
+        sys.exit(1)
 
-if interface!=None:
-    sniff(interface)
+    args=parse_arguments()
+
+    if interface!=None:
+        sniff(interface)
 
 
 
