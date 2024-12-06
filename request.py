@@ -1,9 +1,22 @@
 from packet import Ethernet_Frame as Ethernet_Frame
 
 class Reconstruct:
+    """
+    Handles the reconstruction of HTTP requests from captured packets.
+    """
+    
     requests_return_list=[]
     requests_list={}
+    
+    @staticmethod
     def addPacket(packet:Ethernet_Frame):
+        """
+        Processes a packet and attempts to reconstruct an HTTP request.
+
+        Args:
+            packet (Ethernet_Frame): The captured Ethernet frame containing packet data.
+        """
+
         if packet.is_tcp_packet:
             key=f"{packet.source_ip}:{packet.source_port}->{packet.destination_ip}:{packet.destination_port}"
             if Reconstruct.requests_list.get(key) == None:
@@ -21,14 +34,42 @@ class Reconstruct:
                     if Reconstruct.requests_list[key]['request'].is_full():
                         Reconstruct.requests_return_list.append(Reconstruct.requests_list[key]['request'])
                         Reconstruct.requests_list[key] = None
+    
+    @staticmethod
     def getLastRequest():
+        """
+        Retrieves the last fully reconstructed HTTP request.
+
+        Returns:
+            Request or None: The last HTTP request if available, None otherwise.
+        """
         if Reconstruct.requests_return_list!=[]:
             return Reconstruct.requests_return_list[-1]
         return None
+    
+    @staticmethod
     def loseAll():
+        """
+        Clears the list of reconstructed HTTP requests.
+        """
         Reconstruct.requests_return_list=[]
+
 class Request:
+    """
+    Represents an HTTP request and handles its reconstruction from packet payloads.
+    """
+
     def __init__(self,data,source_ip,source_port,destination_ip,destination_port) -> None:
+        """
+        Initializes the HTTP request object.
+
+        Args:
+            data (str): The raw HTTP request payload.
+            source_ip (str): Source IP address.
+            source_port (int): Source port number.
+            destination_ip (str): Destination IP address.
+            destination_port (int): Destination port number.
+        """
         lines=[line+'\n' for line in data.split('\n')]
         self.request_line=str(lines[0])
         self.source_ip=str(source_ip)
@@ -62,6 +103,12 @@ class Request:
                 self.is_over=True
 
     def append(self,data)->None:
+        """
+        Appends additional packet payload data to the HTTP request.
+
+        Args:
+            data (str): Additional raw HTTP payload.
+        """
         lines=[line+'\n' for line in data.split('\n')]
 
         if not self.is_empty_line_set:
@@ -93,9 +140,21 @@ class Request:
                 self.is_over=True
 
     def is_full(self):
+        """
+        Checks if the HTTP request is fully reconstructed.
+
+        Returns:
+            bool: True if the request is complete, False otherwise.
+        """
         return self.is_over
     
     def __str__(self) -> str:
+        """
+        Converts the HTTP request object into a string representation.
+
+        Returns:
+            str: The string representation of the HTTP request.
+        """
         buffer=f"Request from {self.source_ip}:{self.source_port} to {self.destination_ip}:{self.destination_port}\n"
         buffer+="----------Start Request----------\n"
         buffer+=self.request_line
@@ -109,6 +168,9 @@ class Request:
         return buffer
     
     def print_verbose(self) -> None:
+        """
+        Prints a detailed representation of the HTTP request to the console.
+        """
         buffer=f"Request from {self.source_ip}:{self.source_port} to {self.destination_ip}:{self.destination_port}\n"
         buffer+="----------Start Request----------\n"
         buffer+=self.request_line
@@ -122,6 +184,9 @@ class Request:
         print(buffer)
     
     def print_simple(self) -> None:
+        """
+        Prints a simplified representation of the HTTP request to the console.
+        """
         buffer=f"Request from {self.source_ip}:{self.source_port} to {self.destination_ip}:{self.destination_port}\n"
         buffer+="----------Start Request----------\n"
         buffer+=self.request_line

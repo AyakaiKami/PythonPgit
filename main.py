@@ -10,6 +10,7 @@ import json
 from packet import *
 from request import *
 
+interface=None
 source_ip=None
 destination_ip=None
 source_port=None
@@ -20,10 +21,15 @@ content=None
 record=False
 verbose=False
 
-interface=None
+file_path=None
 
 def sniff(interface):
+    """
+    Sniffs packets from a specified interface
 
+    Args:
+        interface (str): The network interface to sniff on (wlan0, eth0, etc.)
+    """
     try:
         sniffer = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
         sniffer.bind((interface,0))
@@ -59,6 +65,11 @@ def sniff(interface):
         print("Stopped sniffing")
     
 def parse_arguments():
+    """
+    Parses and processes command-line arguments.
+
+    Sets global variables based on the parsed arguments.
+    """
     global source_ip
     global destination_ip
     global source_port
@@ -105,6 +116,15 @@ def parse_arguments():
     verbose = args.verbose if args.verbose!=None else False
 
 def filterRequest(request:Request):
+    """
+    Filters requests based on user-defined criteria.
+
+    Args:
+        request (Request): The HTTP request to evaluate against the filter criteria.
+
+    Returns:
+        bool: True if the request matches the filter criteria, False otherwise.
+    """
     if source_ip!=None and request.source_ip!=source_ip:
         return False
     if source_port!=None and request.source_port!=source_port:
@@ -136,9 +156,16 @@ def filterRequest(request:Request):
         
     return True
 
-file_path=None
 def record_request(request:Request)->None:
+    """
+    Records the given HTTP request to a JSON file.
+
+    Args:
+        request (Request): The HTTP request to be recorded.
+    """
+    
     global file_path
+
     if not file_path:
         file_path=f"requests_capture_{datetime.now().strftime("%d %m %Y %H %M %S")}.json"
         with open(file_path, "w") as f:
@@ -161,6 +188,11 @@ def record_request(request:Request)->None:
         json.dump(data,f,indent=2)
 
 if __name__=='__main__':
+    """
+    Entry point for the program.
+
+    Checks for root privileges and starts packet sniffing on the specified interface.
+    """
     if os.getuid()!=0:
         print("You need need root privileges to run this program!")
         sys.exit(1)
