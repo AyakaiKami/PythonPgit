@@ -82,7 +82,6 @@ def parse_arguments():
     global verbose
     parser = argparse.ArgumentParser(description="HTTP Sniffer Arguments Parser")
     
-    # Define the arguments
     parser.add_argument("--interface", type=str, required=True, help="Network interface to sniff on (e.g., wlan0, eth0)\n")
     parser.add_argument("--source_ip", type=str, help="Source IP address to filter packets\n")
     parser.add_argument("--destination_ip", type=str, help="Destination IP address to filter packets\n")
