@@ -18,6 +18,7 @@ type_request=None
 headers=None
 content=None
 record=False
+verbose=False
 
 interface=None
 
@@ -37,7 +38,11 @@ def sniff(interface):
                 Reconstruct.addPacket(packet)
                 if Reconstruct.getLastRequest()!=None:
                     if filterRequest(Reconstruct.getLastRequest()):
-                        print(Reconstruct.getLastRequest())
+
+                        if verbose:
+                            Reconstruct.getLastRequest().print_verbose()
+                        else:
+                            Reconstruct.getLastRequest().print_simple()
                         if record:
                             record_request(Reconstruct.getLastRequest())
                         Reconstruct.loseAll()
@@ -63,7 +68,7 @@ def parse_arguments():
     global content
     global record
     global interface
-
+    global verbose
     parser = argparse.ArgumentParser(description="HTTP Sniffer Arguments Parser")
     
     # Define the arguments
@@ -76,7 +81,9 @@ def parse_arguments():
     parser.add_argument("--headers", type=str, nargs="*", help="List of header keys and values (e.g., key1:value1 key2:value2)\n")
     parser.add_argument("--content", type=str, help="Content to filter in the packet\n")
     parser.add_argument("--record", action="store_true", help="Flag to start recording traffic\n")
+    parser.add_argument("--verbose", action="store_true", help="Flag to display payloads\n")
     
+
     args = parser.parse_args()
     
     headers_dict = {}
@@ -95,7 +102,8 @@ def parse_arguments():
     headers = headers_dict if headers_dict!=None else None
     content = args.content if args.content!=None else None
     record = args.record if args.record!=None else False
-    
+    verbose = args.verbose if args.verbose!=None else False
+
 def filterRequest(request:Request):
     if source_ip!=None and request.source_ip!=source_ip:
         return False
@@ -113,7 +121,6 @@ def filterRequest(request:Request):
     
     
     for header_key,header_value in headers.items():
-        #print(f"header value:{header_value} request header value {request.header_fields[header_key] if request.header_fields.get(header_key)!=None else "none"}") 
         if not request.header_fields.get(header_key):
             return False
         else:

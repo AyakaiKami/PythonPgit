@@ -11,10 +11,6 @@ class Reconstruct:
                     Reconstruct.requests_list[key]={'sequence_number':packet.sequence_number,'request':Request(packet.payload,packet.source_ip,packet.source_port,packet.destination_ip,packet.destination_port)}
                     
                     if Reconstruct.requests_list[key]['request'].is_full():
-                        #print(f"[+] Packet :{key}\n")
-                        #print("------------Start request-----------")
-                        #print(Reconstruct.requests_list[key]['request'])
-                        #print("------------End request-------------\n")
                         Reconstruct.requests_return_list.append(Reconstruct.requests_list[key]['request'])
                         Reconstruct.requests_list[key] = None
 
@@ -23,10 +19,6 @@ class Reconstruct:
                     Reconstruct.requests_list[key]['sequence_number']=packet.sequence_number
                     Reconstruct.requests_list[key]['request'].append(packet.payload)
                     if Reconstruct.requests_list[key]['request'].is_full():
-                        #print(f"[+] Packet :{key}\n")
-                        #print("------------Start request-----------")
-                        #print(Reconstruct.requests_list[key]['request'])
-                        #print("------------End request-------------\n")
                         Reconstruct.requests_return_list.append(Reconstruct.requests_list[key]['request'])
                         Reconstruct.requests_list[key] = None
     def getLastRequest():
@@ -56,10 +48,6 @@ class Request:
 
             header_key=line.split(':')[0]
             header_value=line.split(':')[1].removeprefix(' ').removesuffix('\n').removesuffix('\r')
-            
-            if header_key=='X-Content-Type-Options':
-                #print(f"{header_key}: {header_value}")
-                pass
 
             self.header_fields[header_key] = header_value
 
@@ -119,3 +107,26 @@ class Request:
             buffer+=self.content
         buffer+="----------End Request-------------\n"
         return buffer
+    
+    def print_verbose(self) -> None:
+        buffer=f"Request from {self.source_ip}:{self.source_port} to {self.destination_ip}:{self.destination_port}\n"
+        buffer+="----------Start Request----------\n"
+        buffer+=self.request_line
+        for key,value in self.header_fields.items():
+            buffer+=f"{key}: {value}\n"
+        
+        buffer+="\n"
+        if self.content!=None:
+            buffer+=self.content
+        buffer+="----------End Request-------------\n"
+        print(buffer)
+    
+    def print_simple(self) -> None:
+        buffer=f"Request from {self.source_ip}:{self.source_port} to {self.destination_ip}:{self.destination_port}\n"
+        buffer+="----------Start Request----------\n"
+        buffer+=self.request_line
+        for key,value in self.header_fields.items():
+            buffer+=f"{key}: {value}\n"
+        
+        buffer+="----------End Request-------------\n"
+        print(buffer)
