@@ -38,7 +38,7 @@ def sniff(interface):
         sniffer.bind((interface, 0))
         sniffer.settimeout(1)
 
-        print(f"Started sniffing on {interface}")
+        print(f"Started sniffing on {interface}\n")
 
         while True:
             try:
