@@ -8,7 +8,7 @@ class Reconstruct:
             key=f"{packet.source_ip}:{packet.source_port}->{packet.destination_ip}:{packet.destination_port}"
             if Reconstruct.requests_list.get(key) == None:
                 if "HTTP" in packet.payload.split('\n')[0]:
-                    Reconstruct.requests_list[key]={'sequence_number':packet.sequence_number,'request':Request(packet.payload)}
+                    Reconstruct.requests_list[key]={'sequence_number':packet.sequence_number,'request':Request(packet.payload,packet.source_ip,packet.source_port,packet.destination_ip,packet.destination_port)}
                     
                     if Reconstruct.requests_list[key]['request'].is_full():
                         #print(f"[+] Packet :{key}\n")
@@ -33,12 +33,16 @@ class Reconstruct:
         if Reconstruct.requests_return_list!=[]:
             return Reconstruct.requests_return_list[-1]
         return None
-    
+    def loseAll():
+        Reconstruct.requests_return_list=[]
 class Request:
-    def __init__(self,data) -> None:
+    def __init__(self,data,source_ip,source_port,destination_ip,destination_port) -> None:
         lines=[line+'\n' for line in data.split('\n')]
-        self.request_line=lines[0]
-        
+        self.request_line=str(lines[0])
+        self.source_ip=str(source_ip)
+        self.source_port=int(source_port)
+        self.destination_ip=str(destination_ip)
+        self.destination_port=int(destination_port)
         self.header_fields={}
 
         self.is_empty_line_set=False
@@ -96,11 +100,14 @@ class Request:
         return self.is_over
     
     def __str__(self) -> str:
-        buffer=self.request_line
+        buffer=f"Request from {self.source_ip}:{self.source_port} to {self.destination_ip}:{self.destination_port}\n"
+        buffer+="----------Start Request----------\n"
+        buffer+=self.request_line
         for key,value in self.header_fields.items():
             buffer+=f"{key}: {value}\n"
         
         buffer+="\n"
         if self.content!=None:
             buffer+=self.content
+        buffer+="----------End Request-------------\n"
         return buffer
