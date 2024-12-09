@@ -191,7 +191,7 @@ class Request:
         Prints a detailed representation of the HTTP request to the console.
         """
         buffer = f"Request from {self.source_ip}:{self.source_port}"
-        buffer += f"to {self.destination_ip}:{self.destination_port}\n"
+        buffer += f" to {self.destination_ip}:{self.destination_port}\n"
         buffer += "----------Start Request----------\n"
         buffer += self.request_line
         for key, value in self.header_fields.items():
@@ -208,7 +208,7 @@ class Request:
         Prints a simplified representation of the HTTP request to the console.
         """
         buffer = f"Request from {self.source_ip}:{self.source_port}"
-        buffer += f"to {self.destination_ip}:{self.destination_port}\n"
+        buffer += f" to {self.destination_ip}:{self.destination_port}\n"
         buffer += "----------Start Request----------\n"
         buffer += self.request_line
         for key, value in self.header_fields.items():
